@@ -1,0 +1,15 @@
+#include "dac.h"
+#include "delay.h"
+
+int main(void)
+{
+	unsigned int i;
+	ConfigDac(0);
+    while(1)
+    {
+    	for( i=0; i <= 1023; i++)
+    	ConvertDac(i);
+    	for( i=1023; i >= 0; i--)
+    	ConvertDac(i);
+    }
+}

@@ -1,0 +1,90 @@
+#include "main.h"
+#include "lcd.h"
+#include <stdio.h>
+
+void adcInit()
+{
+ //enable ADC and clock
+	RCC->APB2ENR |= (1 << 8); //ADC1 clock enable
+	RCC->AHB1ENR |= (1 << 2); //GPIOC enable PC2 (ADC_IN12) for MQ3
+
+/*================ADC===================*/
+//set ADC prescalar in ADC_CCR register
+//ADC input clock is APB2 clock =16Mhz
+//prescalar is 8 so clock is 2 Mhz
+	ADC->CCR |= (3 << 16); //0x11 for div by 8
+
+//set resolution to 12 bits in ADC_CR1 register
+	ADC1->CR1 &= ~(1 << 24);
+
+//set single conversion, EOC, and right data alignment in ADC_CR2 register
+	ADC1->CR2 &= ~(1<<1); //single conversion CONT bit set to 0
+	ADC1->CR2 &= ~(1<<11);//right alignment
+	ADC1->CR2 &= ~(1 << 10); //EOC after each conversion
+
+//set sampling time
+	ADC1->SMPR1 |= 0x07 << 6; //bits for channel 12
+
+//sequence of conversion
+	ADC1->SQR1 |= 0x00; //single conversion
+	ADC1->SQR3 |= (12 << 0); //channel 12 first conversion
+
+//GPIO pins selection and analog function set
+	GPIOC->MODER |= (3 << 4 ); //1:1 Analog mode
+
+	//Enable the ADC
+	ADC1->CR2 |= (1 << 0);
+}
+
+unsigned int readADC()
+{
+unsigned int retval;
+	ADC1->SR = 0x00;
+//start the conversion
+	ADC1->CR2 |= (1 << 30);
+
+	while(!((ADC1->SR) & 0x12));
+
+return ADC1->DR;
+}
+
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+/**
+  * @brief  The application entry point.
+  * @retval int
+  */
+
+int main(void)
+{
+unsigned int retdat,i,final;
+unsigned char buf[16];
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+  /* Configure the system clock */
+  SystemClock_Config();
+  adcInit();
+  lcd_init();
+  lcd_clear();
+  lcd_displayString(1,1,"MQ3-PC2-CH12");
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+//	  for(i=0;i<20;i++)
+	  {
+	  retdat = readADC();
+//	  final += retdat;
+	  }
+
+//	  final /=20;
+
+	  sprintf(buf,"%4.0d mv",retdat);
+	  lcd_displayString(2,1,buf);
+	  HAL_Delay(1000);
+  }
+
+}

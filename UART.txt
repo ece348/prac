@@ -1,0 +1,22 @@
+#include "lpc214x.h"
+#include "uart.h"
+
+
+
+int main(void)
+{
+	char rdata;
+	Uart0_Init(9600);					
+
+	Uart0_Tx('A');							
+	Uart0_String(" UART0 Demo Program \n\r");
+	Uart0_String(" \n\r");				
+	Uart0_String(" Type any Character on HyperTerminal or Teraterm \n\r");
+
+
+	while(1)
+	{
+		rdata = Uart0_Rx();					
+		Uart0_Tx(rdata);					
+	}
+}

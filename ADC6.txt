@@ -1,0 +1,26 @@
+#include "lpc214x.h"
+#include "VIClowlevel.h"
+#include "lcd.h"
+#include "adc.h"
+
+
+  
+void Exti_Init(void);  
+
+
+
+int main(void)
+{
+	Lcd_Init();
+	Adc_Init();
+	Lcd_Cmd(0x01);
+	Exti_Init();					
+
+	Lcd_Cmd(0x80);					
+	Lcd_String("ADC Value ");		
+	Lcd_Cmd(0xC0);					
+	Lcd_String("CH0.1:");			
+	enableIRQ();					
+
+	while(1);
+}
